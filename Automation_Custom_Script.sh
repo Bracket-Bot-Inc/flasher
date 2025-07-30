@@ -53,7 +53,7 @@ wifi.cloned-mac-address=permanent
 EOF
 sudo systemctl restart NetworkManager
 
-# add bracketbot to dialout and video groups
+# add bracketbot to dialout,audio and video groups
 sudo usermod -aG dialout bracketbot
 sudo usermod -aG video bracketbot
 sudo usermod -aG audio bracketbot

@@ -1,28 +1,7 @@
 #!/usr/bin/env bash
 
 # Define the image file names
-ORANGE_PI="DietPi_OrangePi5Ultra-ARMv8-Bookworm.img.xz"
-#RPI5="DietPi_RPi5-ARMv8-Bookworm.img.xz"
-
-# Check if an argument was provided
-if [ -z "$1" ]; then
-    echo "Error: Please specify 'rpi5' or 'orange_pi' as an argument"
-    exit 1
-fi
-
-# Set the image file based on the argument
-case "$1" in
-    rpi5)
-        IMAGE=$RPI5
-        ;;
-    orange_pi)
-        IMAGE=$ORANGE_PI
-        ;;
-    *)
-        echo "Error: Invalid argument. Use 'rpi5' or 'orange_pi'"
-        exit 1
-        ;;
-esac
+IMAGE="DietPi_OrangePi5Ultra-ARMv8-Bookworm.img.xz"
 
 # Set the DIETPI_URL with the selected image
 DIETPI_URL="https://dietpi.com/downloads/images/$IMAGE"
