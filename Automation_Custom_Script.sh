@@ -23,10 +23,10 @@ runasuser() {
 }
 runasuser "curl -LsSf https://astral.sh/uv/install.sh | sh"
 runasuser "uv python install 3.11"
-runasuser "git clone -b ipc https://oauth2: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@github.com/raghavauppuluri13/BracketBotOS.git"
+runasuser "git clone -b ipc https://oauth2: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@github.com/Bracket-Bot-Inc/BracketBotOS.git"
 runasuser "cd BracketBotOS; uv run ./install"
-# allows uv python to set process priority
-runasuser "sudo setcap 'cap_sys_nice=eip' \$(readlink -f \$(uv python find))"
+
+# allows daemons python to set process priority
 runasuser "sudo setcap 'cap_sys_nice=eip' \$(nix-build 'https://github.com/NixOS/nixpkgs/archive/63dacb46bf939521bdc93981b4cbb7ecb58427a0.tar.gz' -A python311 --no-out-link)/bin/python3.11"
 
 # disable spammy kernel logs
@@ -53,16 +53,14 @@ wifi.cloned-mac-address=permanent
 EOF
 sudo systemctl restart NetworkManager
 
-# add bracketbot to dialout,audio and video groups
+# add bracketbot to dialout, audio and video groups
 sudo usermod -aG dialout bracketbot
 sudo usermod -aG video bracketbot
 sudo usermod -aG audio bracketbot
-
 # led strip spi
-sudo groupadd bracketbot
-sudo adduser bracketbot spi
-sudo chgrp spi /dev/spidev1.1
-sudo chmod 660 /dev/spidev1.1
+sudo groupadd spi
+sudo usermod -aG spi bracketbot
+echo 'SUBSYSTEM=="spidev", GROUP="spi", MODE="0660"' | sudo tee /etc/udev/rules.d/90-spi.rules
 
 echo "Rebooting..."
 sudo reboot
