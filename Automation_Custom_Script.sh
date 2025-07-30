@@ -57,6 +57,7 @@ sudo systemctl restart NetworkManager
 sudo usermod -aG dialout bracketbot
 sudo usermod -aG video bracketbot
 sudo usermod -aG audio bracketbot
+
 # led strip spi
 sudo groupadd spi
 sudo usermod -aG spi bracketbot
