@@ -3,35 +3,16 @@ ROOT_DEV=$(findmnt -no SOURCE /)
 # Add journal + 5‑second commit window (harmless if already set)
 if ! tune2fs -l "$ROOT_DEV" | grep -q "has_journal"; then
   tune2fs -O has_journal "$ROOT_DEV"
-  echo "Journal enabled"
 fi
 # Set defaults: full data‑journaling and 5 s commit interval
 if ! tune2fs -l "$ROOT_DEV" | grep -q "journal_data"; then
   tune2fs -o journal_data,commit=5 "$ROOT_DEV"
-  echo "Journal data set to 5 seconds"
 fi
 
 # Patch /etc/fstab for safer options (idempotent)
 FSTAB_LINE=$(grep -nE "\s/\s+ext4" /etc/fstab | cut -d: -f1)
 if [[ -n "$FSTAB_LINE" ]]; then
-  sed -i "${FSTAB_LINE}s@[^ ]*\s*/\s*ext4.*@${ROOT_DEV} / ext4 defaults,noatime,errors=remount-ro 0 1@" /etc/fstab
-  echo "Fstab patched"
-fi
-
-mkdir -p /boot/overlay-user
-cp /boot/dtb/rockchip/overlay/rk3588-uart2-m0.dtbo /boot/overlay-user/
-
-# Add overlays if not already present
-grep -q '^overlays=spi1-m1-cs1-spidev$' /boot/dietpiEnv.txt || echo 'overlays=spi1-m1-cs1-spidev' | sudo tee -a /boot/dietpiEnv.txt
-
-# Add user_overlays if not already present
-grep -q '^user_overlays=rk3588-uart2-m0$' /boot/dietpiEnv.txt || echo 'user_overlays=rk3588-uart2-m0' | sudo tee -a /boot/dietpiEnv.txt
-
-# Add extraargs, replacing existing line if it exists
-if grep -q '^extraargs=' /boot/dietpiEnv.txt; then
-  sudo sed -i 's|^extraargs=.*|extraargs=rootflags=data=journal,errors=remount-ro,commit=5,noatime net.ifnames=0|' /boot/dietpiEnv.txt
-else
-  echo 'extraargs=rootflags=data=journal,errors=remount-ro,commit=5,noatime net.ifnames=0' | sudo tee -a /boot/dietpiEnv.txt
+  sed -i "${FSTAB_LINE}s@[^ ]*\s*/\s*ext4.*@${ROOT_DEV} / ext4 defaults,noatime,nolazytime,errors=remount-ro 0 1@" /etc/fstab
 fi
 
 OLD_USER=dietpi
@@ -82,6 +63,9 @@ runasuser "uv python install 3.11"
 runasuser "[[ -d BracketBotOS ]] || git clone -b ipc https://oauth2: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@github.com/Bracket-Bot-Inc/BracketBotOS.git"
 runasuser "cd BracketBotOS; uv run ./install"
 
+# allows daemons python to set process priority
+runasuser "sudo setcap 'cap_sys_nice=eip' \$(nix-build 'https://github.com/NixOS/nixpkgs/archive/63dacb46bf939521bdc93981b4cbb7ecb58427a0.tar.gz' -A python311 --no-out-link)/bin/python3.11"
+
 # Use NetworkManager instead of ifupdown
 sudo apt purge -y ifupdown isc-dhcp-client isc-dhcp-server
 
@@ -104,5 +88,9 @@ wifi.scan-rand-mac-address=no
 wifi.cloned-mac-address=permanent
 EOF
 fi
+
+sudo systemctl restart NetworkManager
+
+sleep 10
 
 sudo reboot
