@@ -8,7 +8,7 @@ A simple tool to flash DietPi images to SD cards with custom configuration.
 - Flashes the image to your SD card
 - Mounts the Linux filesystem to access the `/boot` directory
 - Automatically copies custom configuration files
-- Supports both macOS (Apple Silicon) and Linux
+- **Unified script** that automatically detects and supports both macOS and Linux
 
 ## Requirements
 
@@ -31,16 +31,14 @@ A simple tool to flash DietPi images to SD cards with custom configuration.
 
 1. Insert your SD card
 
-2. Run the appropriate script for your OS:
+2. Run the flash script:
    ```bash
-   # For macOS
-   ./flash-macos.sh
-
-   # For Linux
-   ./flash-linux.sh
+   ./flash.sh
    ```
+   
+   The script will automatically detect your operating system (macOS or Linux) and use the appropriate commands.
 
-3. Follow the prompts to select your SD card
+3. On macOS, you'll be prompted to confirm the target disk
 
 4. Wait for the process to complete
 
@@ -60,19 +58,26 @@ Make sure these files exist in the same directory as the flash script before run
 
 ## How It Works
 
-### Linux
-The Linux script directly mounts the ext4 filesystem and copies configuration files to the `/boot` directory.
+The unified `flash.sh` script:
+1. Detects your operating system using `uname`
+2. Uses platform-specific commands for disk detection and mounting
+3. Downloads and caches the DietPi image (if not already present)
+4. Flashes the image using `dd` with appropriate parameters
+5. Mounts the boot partition and copies your configuration files
 
-### macOS
-Since macOS cannot natively mount Linux filesystems, the script uses `anylinuxfs` which:
-- Creates a lightweight Linux VM in the background
-- Mounts the ext4 partition inside the VM
-- Exports it back to macOS via NFS
-- Allows copying files to the `/boot` directory
+### Platform-Specific Behavior
+
+**Linux**: Directly mounts the ext4 filesystem using native tools
+
+**macOS**: Uses `anylinuxfs` to mount Linux filesystems by:
+- Creating a lightweight Linux VM in the background
+- Mounting the ext4 partition inside the VM
+- Exporting it back to macOS via NFS
+- Allowing file operations on the Linux filesystem
 
 ## Notes
 
 - The image is cached after first download to save time on subsequent flashes
 - Default password is set to `1234` (configured in dietpi.txt)
 - WiFi is enabled by default, Ethernet is disabled (can be changed in dietpi.txt)
-- Warning messages about "extended attributes" on macOS are harmless and can be ignored
+- macOS users: Warning messages about "extended attributes" are harmless and can be ignored
