@@ -51,6 +51,22 @@ The script will:
 - Configure WiFi with your provided credentials
 - Update configuration files automatically during the copy process
 
+### Monitoring Device Logs
+
+After flashing and booting your device, you can monitor its logs using the included log viewer:
+
+```bash
+./log_viewer.sh
+```
+
+The log viewer will:
+1. Prompt for the hostname (e.g., `bracketbot-742`)
+2. Connect to the device via SSH (default password: `1234`)
+3. Open a tmux session with multiple panes showing:
+   - Boot logs (`/var/log/syslog`)
+   - Service logs (`/var/log/dietpi-*.log`)
+   - Real-time log updates
+
 ## Features
 
 - Downloads DietPi image for Orange Pi 5 Ultra
@@ -74,22 +90,6 @@ The flasher automatically copies these configuration files to the `/boot` direct
 - Hostname: `bracketbot-XXX` (replaced with random number at runtime)
 - WiFi SSID: `TO-BE-FILLED` (replaced with your input)
 - WiFi Password: `TO-BE-FILLED` (replaced with your input)
-
-### Monitoring Device Logs
-
-After flashing and booting your device, you can monitor its logs using the included log viewer:
-
-```bash
-./log_viewer.sh
-```
-
-The log viewer will:
-1. Prompt for the hostname (e.g., `bracketbot-742`)
-2. Connect to the device via SSH (default password: `1234`)
-3. Open a tmux session with multiple panes showing:
-   - Boot logs (`/var/log/syslog`)
-   - Service logs (`/var/log/dietpi-*.log`)
-   - Real-time log updates
 
 **Tmux controls:**
 - `Ctrl-B` then arrow keys: Navigate between panes
