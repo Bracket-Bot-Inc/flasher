@@ -7,6 +7,19 @@ IMG_NAME="${IMAGE%.xz}"
 # Detect OS
 OS=$(uname -s)
 
+# Generate random 3-digit number for hostname
+RANDOM_NUM=$(printf "%03d" $((RANDOM % 1000)))
+HOSTNAME="bracketbot-${RANDOM_NUM}"
+
+# Prompt for WiFi credentials
+echo "[*] WiFi Configuration"
+read -p "Enter WiFi SSID: " WIFI_SSID
+read -p "Enter WiFi Password: " WIFI_PASSWORD
+
+echo "[*] Generated hostname: $HOSTNAME"
+echo "[*] WiFi SSID: $WIFI_SSID"
+echo "[*] WiFi Password: $WIFI_PASSWORD"
+
 # Find device based on OS
 if [ "$OS" = "Linux" ]; then
     DEVICE=($(lsblk -dn -o NAME | grep -E '^sd' | sort | sed 's|^|/dev/|'))
@@ -56,13 +69,25 @@ fi
 
 sleep 2
 
+# Prepare sed expressions for configuration updates
+# Escape single quotes in SSID and password for sed
+ESCAPED_SSID=$(echo "$WIFI_SSID" | sed "s/'/'\\\\''/g")
+ESCAPED_PASSWORD=$(echo "$WIFI_PASSWORD" | sed "s/'/'\\\\''/g")
+
 # Mount and copy files based on OS
-echo "[*] Copying config files..."
+echo "[*] Copying config files with updated values..."
 if [ "$OS" = "Linux" ]; then
     sudo mkdir -p mnt
     sudo mount ${DEVICE}2 mnt
     [ ! -d "mnt/boot" ] && { sudo umount mnt; sudo mount ${DEVICE}1 mnt; }
-    sudo cp dietpi*.txt mnt/boot/
+    
+    # Update and copy dietpi.txt on-the-fly
+    sed "s/AUTO_SETUP_NET_HOSTNAME=.*/AUTO_SETUP_NET_HOSTNAME=$HOSTNAME/" dietpi.txt | sudo tee mnt/boot/dietpi.txt > /dev/null
+    
+    # Update and copy dietpi-wifi.txt on-the-fly
+    sed -e "s/aWIFI_SSID\[0\]=.*/aWIFI_SSID[0]='$ESCAPED_SSID'/" \
+        -e "s/aWIFI_KEY\[0\]=.*/aWIFI_KEY[0]='$ESCAPED_PASSWORD'/" dietpi-wifi.txt | sudo tee mnt/boot/dietpi-wifi.txt > /dev/null
+    
     sudo cp Automation_Custom_Script.sh mnt/boot/
     sudo umount mnt
 else
@@ -71,7 +96,14 @@ else
     sudo mkdir -p /tmp/mnt
     sudo anylinuxfs "/dev/${DISK_ID}s1" /tmp/mnt
     sleep 3
-    sudo cp dietpi*.txt /tmp/mnt/boot/
+    
+    # Update and copy dietpi.txt on-the-fly
+    sed "s/AUTO_SETUP_NET_HOSTNAME=.*/AUTO_SETUP_NET_HOSTNAME=$HOSTNAME/" dietpi.txt | sudo tee /tmp/mnt/boot/dietpi.txt > /dev/null
+    
+    # Update and copy dietpi-wifi.txt on-the-fly
+    sed -e "s/aWIFI_SSID\[0\]=.*/aWIFI_SSID[0]='$ESCAPED_SSID'/" \
+        -e "s/aWIFI_KEY\[0\]=.*/aWIFI_KEY[0]='$ESCAPED_PASSWORD'/" dietpi-wifi.txt | sudo tee /tmp/mnt/boot/dietpi-wifi.txt > /dev/null
+    
     sudo cp Automation_Custom_Script.sh /tmp/mnt/boot/
     sudo umount /tmp/mnt 2>/dev/null
     anylinuxfs stop
