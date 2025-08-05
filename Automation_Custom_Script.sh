@@ -58,7 +58,7 @@ chmod 0440 "$SUDOERS_FILE"
 
 # Helpful groups
 
-for grp in sudo dialout video audio spi; do
+for grp in sudo dialout video audio spi render; do
   getent group "$grp" >/dev/null || groupadd "$grp"
   usermod -aG "$grp" "$NEW_USER"
 done
@@ -74,7 +74,21 @@ OVERLAY_SRC="/boot/dtb/rockchip/overlay/rk3588-uart2-m0.dtbo"
 OVERLAY_DST="/boot/overlay-user/rk3588-uart2-m0.dtbo"
 [[ -f "$OVERLAY_SRC" && ! -f "$OVERLAY_DST" ]] && cp "$OVERLAY_SRC" "$OVERLAY_DST"
 
-# install bracketbot
+# Install the Mali-G610 driver library
+cd /usr/lib && sudo wget \
+https://github.com/JeffyCN/mirrors/raw/libmali/lib/aarch64-linux-gnu/libmali-valhall-g610-g6p0-x11-wayland-gbm.so
+
+# -- Install the GPU firmware blob
+cd /lib/firmware && sudo wget \
+https://github.com/JeffyCN/mirrors/raw/libmali/firmware/g610/mali_csffw.bin
+
+# --  Register the driver with the OpenCL ICD loader
+sudo mkdir -p /etc/OpenCL/vendors
+echo "/usr/lib/libmali-valhall-g610-g6p0-x11-wayland-gbm.so" | \
+sudo tee /etc/OpenCL/vendors/mali.icd
+
+
+# Install bracketbot
 runasuser() {
        su - bracketbot -c "cd /home/bracketbot; source ~/.bashrc; $*"
 }
