@@ -2,17 +2,6 @@
 
 A simple tool to flash DietPi images to SD cards with custom configuration.
 
-## Features
-
-- Downloads DietPi image for Orange Pi 5 Ultra
-- Flashes the image to your SD card
-- **Interactive WiFi setup** - prompts for SSID and password at runtime
-- **Unique hostname generation** - creates hostnames like `bracketbot-435` with random 3-digit suffix
-- Mounts the Linux filesystem to access the `/boot` directory
-- Automatically copies and updates configuration files
-- **Unified script** that automatically detects and supports both macOS and Linux
-- **Log viewer utility** for monitoring device logs after deployment
-
 ## Requirements
 
 ### macOS (Apple Silicon only)
@@ -61,6 +50,17 @@ The script will:
 - Generate a unique hostname with format `bracketbot-XXX` (where XXX is a random 3-digit number)
 - Configure WiFi with your provided credentials
 - Update configuration files automatically during the copy process
+
+## Features
+
+- Downloads DietPi image for Orange Pi 5 Ultra
+- Flashes the image to your SD card
+- **Interactive WiFi setup** - prompts for SSID and password at runtime
+- **Unique hostname generation** - creates hostnames like `bracketbot-435` with random 3-digit suffix
+- Mounts the Linux filesystem to access the `/boot` directory
+- Automatically copies and updates configuration files
+- **Unified script** that automatically detects and supports both macOS and Linux
+- **Log viewer utility** for monitoring device logs after deployment
 
 ## Configuration Files
 
