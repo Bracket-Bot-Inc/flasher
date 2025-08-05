@@ -28,10 +28,11 @@ grep -q '^overlays=spi1-m1-cs1-spidev$' /boot/dietpiEnv.txt || echo 'overlays=sp
 grep -q '^user_overlays=rk3588-uart2-m0$' /boot/dietpiEnv.txt || echo 'user_overlays=rk3588-uart2-m0' | sudo tee -a /boot/dietpiEnv.txt
 
 # Add extraargs, replacing existing line if it exists
+EXTRA_ARGS='rootflags=data=journal,errors=remount-ro,commit=5,noatime net.ifnames=0 usbcore.autosuspend=-1'
 if grep -q '^extraargs=' /boot/dietpiEnv.txt; then
-  sudo sed -i 's|^extraargs=.*|extraargs=rootflags=data=journal,errors=remount-ro,commit=5,noatime net.ifnames=0|' /boot/dietpiEnv.txt
+  sudo sed -i 's|^extraargs=.*|extraargs=${EXTRA_ARGS}|' /boot/dietpiEnv.txt
 else
-  echo 'extraargs=rootflags=data=journal,errors=remount-ro,commit=5,noatime net.ifnames=0' | sudo tee -a /boot/dietpiEnv.txt
+  echo 'extraargs=${EXTRA_ARGS}' | sudo tee -a /boot/dietpiEnv.txt
 fi
 
 OLD_USER=dietpi
