@@ -30,10 +30,26 @@ grep -q '^user_overlays=rk3588-uart2-m0$' /boot/dietpiEnv.txt || echo 'user_over
 # Add extraargs, replacing existing line if it exists
 EXTRA_ARGS='rootflags=data=journal,errors=remount-ro,commit=5,noatime net.ifnames=0 usbcore.autosuspend=-1'
 if grep -q '^extraargs=' /boot/dietpiEnv.txt; then
-  sudo sed -i 's|^extraargs=.*|extraargs=${EXTRA_ARGS}|' /boot/dietpiEnv.txt
+  sudo sed -i "s|^extraargs=.*|extraargs=$EXTRA_ARGS|" /boot/dietpiEnv.txt
 else
-  echo 'extraargs=${EXTRA_ARGS}' | sudo tee -a /boot/dietpiEnv.txt
+  echo "extraargs=$EXTRA_ARGS" | sudo tee -a /boot/dietpiEnv.txt
 fi
+
+
+# Install RKNPU2
+curl -o /usr/lib/librknnrt.so https://github.com/Pelochus/ezrknn-toolkit2/raw/3780dd7e3f1b96f9f76533ac0bbcde1dd268c5ad/rknpu2/runtime/Linux/librknn_api/aarch64/librknnrt.so
+
+sudo tee /etc/udev/rules.d/99-rknpu-permissions.rules > /dev/null << 'EOF'
+# RKNPU permissions for DRM render devices
+# The RK3588 NPU is accessed through these DRM devices
+SUBSYSTEM=="drm", KERNEL=="renderD129", MODE="0666", GROUP="render"
+SUBSYSTEM=="drm", KERNEL=="card1", MODE="0666", GROUP="render"
+
+# Also handle any traditional rknpu device if it exists
+KERNEL=="rknpu", MODE="0666"
+KERNEL=="rknpu[0-9]*", MODE="0666"
+EOF
+
 
 OLD_USER=dietpi
 NEW_USER=bracketbot
