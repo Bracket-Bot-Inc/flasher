@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Unified flash script for Linux and macOS
-IMAGE="DietPi_OrangePi5Ultra-ARMv8-Bookworm.img.xz"
+IMAGE="DietPi_OrangePi5Pro-ARMv8-Bookworm.img.xz"
 IMG_NAME="${IMAGE%.xz}"
 
 # Detect OS
@@ -104,7 +104,7 @@ else
     sed -e "s/aWIFI_SSID\[0\]=.*/aWIFI_SSID[0]='$ESCAPED_SSID'/" \
         -e "s/aWIFI_KEY\[0\]=.*/aWIFI_KEY[0]='$ESCAPED_PASSWORD'/" dietpi-wifi.txt | sudo tee /tmp/mnt/boot/dietpi-wifi.txt > /dev/null
     
-    sudo cp Automation_Custom_Script.sh /tmp/mnt/boot/
+    sudo cp -X Automation_Custom_Script.sh /tmp/mnt/boot/
     sudo umount /tmp/mnt 2>/dev/null
     anylinuxfs stop
 fi
