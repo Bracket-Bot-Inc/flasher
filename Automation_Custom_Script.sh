@@ -37,7 +37,7 @@ fi
 
 
 # Install RKNPU2
-curl -o /usr/lib/librknnrt.so https://github.com/Pelochus/ezrknn-toolkit2/raw/3780dd7e3f1b96f9f76533ac0bbcde1dd268c5ad/rknpu2/runtime/Linux/librknn_api/aarch64/librknnrt.so
+wget -P /usr/lib https://github.com/Pelochus/ezrknn-toolkit2/raw/3780dd7e3f1b96f9f76533ac0bbcde1dd268c5ad/rknpu2/runtime/Linux/librknn_api/aarch64/librknnrt.so
 
 sudo tee /etc/udev/rules.d/99-rknpu-permissions.rules > /dev/null << 'EOF'
 # RKNPU permissions for DRM render devices
