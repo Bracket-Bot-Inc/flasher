@@ -16,7 +16,7 @@ echo "[*] WiFi Configuration"
 read -p "Enter WiFi SSID: " WIFI_SSID
 read -p "Enter WiFi Password: " WIFI_PASSWORD
 
-echo "[*] Generated hostname: $HOSTNAME"
+echo -e "\033[1;32m[*] Generated hostname: $HOSTNAME\033[0m"
 echo "[*] WiFi SSID: $WIFI_SSID"
 echo "[*] WiFi Password: $WIFI_PASSWORD"
 
@@ -42,9 +42,9 @@ fi
 # Confirm on macOS
 if [ "$OS" = "Darwin" ]; then
     echo "[*] Will flash to: $DEVICE"
-    echo -n "Continue? (yes/no): "
+    echo -n "Continue? (YES/no): "
     read CONFIRM
-    [ "$CONFIRM" != "yes" ] && exit 0
+    [ "$CONFIRM" != "yes" ] && [ "$CONFIRM" != "" ] && exit 0
 fi
 
 # Download/decompress if needed
