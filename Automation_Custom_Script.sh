@@ -19,13 +19,23 @@ if [[ -n "$FSTAB_LINE" ]]; then
 fi
 
 mkdir -p /boot/overlay-user
-cp /boot/dtb/rockchip/overlay/rk3588-uart2-m0.dtbo /boot/overlay-user/
+cp /boot/dtb/rockchip/overlay/rk3588-uart0-m0.dtbo /boot/overlay-user/
 
 # Add overlays if not already present
-grep -q '^overlays=spi1-m1-cs1-spidev$' /boot/dietpiEnv.txt || echo 'overlays=spi1-m1-cs1-spidev' | sudo tee -a /boot/dietpiEnv.txt
+OVERLAY='spi0-m2-cs0-cs1-spidev'
+if grep -q '^overlays=' /boot/dietpiEnv.txt; then
+  sudo sed -i "s|^overlays=|overlays=$OVERLAY|" /boot/dietpiEnv.txt
+then
+  echo "overlays=$OVERLAY" | sudo tee -a /boot/dietpiEnv.txt
+fi
 
 # Add user_overlays if not already present
-grep -q '^user_overlays=rk3588-uart2-m0$' /boot/dietpiEnv.txt || echo 'user_overlays=rk3588-uart2-m0' | sudo tee -a /boot/dietpiEnv.txt
+USER_OVERLAY='rk3588-uart0-m2'
+if grep -q '^user_overlays=' /boot/dietpiEnv.txt; then
+  sudo sed -i "s|^user_overlays=|user_overlays=$USER_OVERLAY|" /boot/dietpiEnv.txt
+then
+  echo "user_overlays=$USER_OVERLAY" | sudo tee -a /boot/dietpiEnv.txt
+fi
 
 # Add extraargs, replacing existing line if it exists
 EXTRA_ARGS='rootflags=data=journal,errors=remount-ro,commit=5,noatime net.ifnames=0 usbcore.autosuspend=-1'
@@ -86,9 +96,9 @@ RULE="/etc/udev/rules.d/90-spi.rules"
 
 # Copy UART overlay (idempotent)
 mkdir -p /boot/overlay-user
-OVERLAY_SRC="/boot/dtb/rockchip/overlay/rk3588-uart2-m0.dtbo"
-OVERLAY_DST="/boot/overlay-user/rk3588-uart2-m0.dtbo"
-[[ -f "$OVERLAY_SRC" && ! -f "$OVERLAY_DST" ]] && cp "$OVERLAY_SRC" "$OVERLAY_DST"
+USER_OVERLAY_SRC="/boot/dtb/rockchip/overlay/rk3588-uart2-m0.dtbo"
+USER_OVERLAY_DST="/boot/overlay-user/rk3588-uart2-m0.dtbo"
+[[ -f "$USER_OVERLAY_SRC" && ! -f "$USER_OVERLAY_DST" ]] && cp "$USER_OVERLAY_SRC" "$USER_OVERLAY_DST"
 
 # Install the Mali-G610 driver library
 cd /usr/lib && sudo curl \
@@ -135,5 +145,17 @@ wifi.scan-rand-mac-address=no
 wifi.cloned-mac-address=permanent
 EOF
 fi
+
+sudo systemctl restart NetworkManager
+
+sleep 2
+
+nmcli con add type wifi ifname 'wlan0' con-name 'WIFI_SSID' ssid 'WIFI_SSID'
+nmcli con modify 'WIFI_SSID' \
+  802-11-wireless.mode infrastructure \
+  802-11-wireless-security.key-mgmt wpa-psk \
+  802-11-wireless-security.psk 'WIFI_PASSWORD' \
+  connection.autoconnect yes \
+  connection.interface-name 'wlan0'
 
 sudo reboot
