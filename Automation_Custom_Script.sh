@@ -18,8 +18,6 @@ if [[ -n "$FSTAB_LINE" ]]; then
   echo "Fstab patched"
 fi
 
-mkdir -p /boot/overlay-user
-cp /boot/dtb/rockchip/overlay/rk3588-uart0-m0.dtbo /boot/overlay-user/
 
 # Add overlays if not already present
 OVERLAY='spi0-m2-cs0-cs1-spidev'
@@ -31,6 +29,9 @@ fi
 
 # Add user_overlays if not already present
 USER_OVERLAY='rk3588-uart0-m2'
+mkdir -p /boot/overlay-user
+cp /boot/dtb/rockchip/overlay/$USER_OVERLAY.dtbo /boot/overlay-user/
+
 if grep -q '^user_overlays=' /boot/dietpiEnv.txt; then
   sudo sed -i "s|^user_overlays=|user_overlays=$USER_OVERLAY|" /boot/dietpiEnv.txt
 then
