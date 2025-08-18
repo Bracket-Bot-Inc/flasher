@@ -10,7 +10,7 @@ if [ -z "$HOST" ]; then
     exit 1
 fi
 
-DEST=./${HOST}
+DEST=./logs/${HOST}
 SESSION_NAME="dietpi-logs"
 
 mkdir -p ${DEST}
@@ -28,6 +28,7 @@ cleanup() {
     ssh -O exit -S "$sock" root@${HOST}.local 2>/dev/null
     # Kill tmux session if it exists
     tmux kill-session -t "$SESSION_NAME" 2>/dev/null
+
     exit 0
 }
 
@@ -53,7 +54,7 @@ ssh -M -Nf -o ControlPath="$sock" -o ControlPersist=5m root@${HOST}.local
 echo "Starting file sync in background..."
 (
     while true; do
-        scp -q -o ControlPath="$sock" "root@${HOST}.local:/var/tmp/dietpi/logs/dietpi*.log" . 2>/dev/null
+        scp -q -o ControlPath="$sock" "root@${HOST}.local:/var/tmp/dietpi/logs/dietpi*.log" ${DEST}/ 2>/dev/null
         sleep 0.5
     done
 ) &
@@ -67,12 +68,12 @@ sleep 3
 echo "Creating tmux dashboard for log files..."
 
 # Get list of synced log files
-LOG_FILES=(dietpi*.log)
+LOG_FILES=(${DEST}/dietpi*.log)
 
 if [ ${#LOG_FILES[@]} -eq 0 ] || [ ! -e "${LOG_FILES[0]}" ]; then
     echo "No log files found yet. Waiting..."
     sleep 2
-    LOG_FILES=(dietpi*.log)
+    LOG_FILES=(${DEST}/dietpi*.log)
 fi
 
 # Create the first tmux window with the first log file

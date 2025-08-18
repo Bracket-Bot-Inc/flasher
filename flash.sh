@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-
+TARGET=OrangePi5Pro
 # Unified flash script for Linux and macOS
-IMAGE="DietPi_OrangePi5Pro-ARMv8-Bookworm.img.xz"
+IMAGE="DietPi_${TARGET}-ARMv8-Bookworm.img"
 IMG_NAME="${IMAGE%.xz}"
 
 # Detect OS
@@ -48,23 +48,22 @@ if [ "$OS" = "Darwin" ]; then
 fi
 
 # Download/decompress if needed
-if [[ ! -f "$IMG_NAME" ]]; then
-    [[ ! -f "$IMAGE" ]] && {
-        echo "[*] Downloading..."
-        wget -q --show-progress "https://dietpi.com/downloads/images/$IMAGE"
-    }
+if [[ ! -f "img/$IMAGE" ]]; then
+    echo "[*] Downloading..."
+    wget -q --show-progress "https://dietpi.com/downloads/images/$IMAGE.xz"
     echo "[*] Decompressing..."
-    xz -dk "$IMAGE"
+    xz -dk "$IMAGE.xz" -C img/
+    rm "$IMAGE.xz"
 fi
 
 # Flash based on OS
 echo "[*] Flashing..."
 if [ "$OS" = "Linux" ]; then
-    sudo dd if="$IMG_NAME" of="$DEVICE" bs=4M conv=fsync status=progress
+    sudo dd if="img/$IMAGE" of="$DEVICE" bs=4M conv=fsync status=progress
     sudo partprobe "$DEVICE"
 else
     sudo diskutil unmountDisk "$DEVICE"
-    sudo dd if="$IMG_NAME" of="${DEVICE/disk/rdisk}" bs=4m status=progress
+    sudo dd if="img/$IMAGE" of="${DEVICE/disk/rdisk}" bs=4m status=progress
 fi
 
 sleep 2
@@ -82,13 +81,13 @@ if [ "$OS" = "Linux" ]; then
     [ ! -d "mnt/boot" ] && { sudo umount mnt; sudo mount ${DEVICE}1 mnt; }
     
     # Update and copy dietpi.txt on-the-fly
-    sed "s/AUTO_SETUP_NET_HOSTNAME=.*/AUTO_SETUP_NET_HOSTNAME=$HOSTNAME/" dietpi.txt | sudo tee mnt/boot/dietpi.txt > /dev/null
+    sed "s/AUTO_SETUP_NET_HOSTNAME=.*/AUTO_SETUP_NET_HOSTNAME=$HOSTNAME/" ${TARGET}/dietpi.txt | sudo tee mnt/boot/dietpi.txt > /dev/null
     
     # Update and copy dietpi-wifi.txt on-the-fly
     sed -e "s/aWIFI_SSID\[0\]=.*/aWIFI_SSID[0]='$ESCAPED_SSID'/g" \
-        -e "s/aWIFI_KEY\[0\]=.*/aWIFI_KEY[0]='$ESCAPED_PASSWORD'/g" dietpi-wifi.txt | sudo tee mnt/boot/dietpi-wifi.txt > /dev/null
+        -e "s/aWIFI_KEY\[0\]=.*/aWIFI_KEY[0]='$ESCAPED_PASSWORD'/g" ${TARGET}/dietpi-wifi.txt | sudo tee mnt/boot/dietpi-wifi.txt > /dev/null
     
-    sudo cp Automation_Custom_Script.sh mnt/boot/
+    sudo cp ${TARGET}/Automation_Custom_Script.sh mnt/boot/
     sudo umount mnt
 else
     DISK_ID="${DEVICE#/dev/}"
@@ -98,16 +97,16 @@ else
     sleep 3
     
     # Update and copy dietpi.txt on-the-fly
-    sed "s/AUTO_SETUP_NET_HOSTNAME=.*/AUTO_SETUP_NET_HOSTNAME=$HOSTNAME/" dietpi.txt | sudo tee /tmp/mnt/boot/dietpi.txt > /dev/null
+    sed "s/AUTO_SETUP_NET_HOSTNAME=.*/AUTO_SETUP_NET_HOSTNAME=$HOSTNAME/" ${TARGET}/dietpi.txt | sudo tee /tmp/mnt/boot/dietpi.txt > /dev/null
     
     # Update and copy dietpi-wifi.txt on-the-fly
     sed -e "s/aWIFI_SSID\[0\]=.*/aWIFI_SSID[0]='$ESCAPED_SSID'/g" \
-        -e "s/aWIFI_KEY\[0\]=.*/aWIFI_KEY[0]='$ESCAPED_PASSWORD'/g" dietpi-wifi.txt | sudo tee /tmp/mnt/boot/dietpi-wifi.txt > /dev/null
+        -e "s/aWIFI_KEY\[0\]=.*/aWIFI_KEY[0]='$ESCAPED_PASSWORD'/g" ${TARGET}/dietpi-wifi.txt | sudo tee /tmp/mnt/boot/dietpi-wifi.txt > /dev/null
    
-    sudo cp -X Automation_Custom_Script.sh /tmp/mnt/boot/
+    sudo cp -X ${TARGET}/Automation_Custom_Script.sh /tmp/mnt/boot/
 
     sed -e "s/WIFI_SSID/$ESCAPED_SSID/g" \
-        -e "s/WIFI_PASSWORD/$ESCAPED_PASSWORD/g" Automation_Custom_Script.sh | sudo tee /tmp/mnt/boot/Automation_Custom_Script.sh > /dev/null
+        -e "s/WIFI_PASSWORD/$ESCAPED_PASSWORD/g" ${TARGET}/Automation_Custom_Script.sh | sudo tee /tmp/mnt/boot/Automation_Custom_Script.sh > /dev/null
     
     sudo umount /tmp/mnt 2>/dev/null
     anylinuxfs stop

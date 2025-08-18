@@ -18,12 +18,11 @@ if [[ -n "$FSTAB_LINE" ]]; then
   echo "Fstab patched"
 fi
 
-
 # Add overlays if not already present
 OVERLAY='spi0-m2-cs0-cs1-spidev'
 if grep -q '^overlays=' /boot/dietpiEnv.txt; then
   sudo sed -i "s|^overlays=|overlays=$OVERLAY|" /boot/dietpiEnv.txt
-then
+else
   echo "overlays=$OVERLAY" | sudo tee -a /boot/dietpiEnv.txt
 fi
 
@@ -34,7 +33,7 @@ cp /boot/dtb/rockchip/overlay/$USER_OVERLAY.dtbo /boot/overlay-user/
 
 if grep -q '^user_overlays=' /boot/dietpiEnv.txt; then
   sudo sed -i "s|^user_overlays=|user_overlays=$USER_OVERLAY|" /boot/dietpiEnv.txt
-then
+else
   echo "user_overlays=$USER_OVERLAY" | sudo tee -a /boot/dietpiEnv.txt
 fi
 
@@ -114,14 +113,20 @@ sudo mkdir -p /etc/OpenCL/vendors
 echo "/usr/lib/libmali-valhall-g610-g6p0-x11-wayland-gbm.so" | \
 sudo tee /etc/OpenCL/vendors/mali.icd
 
+# -- Set the journal retention time to 30 minutes
+sed -i '/^MaxRetentionSec=/d' /etc/systemd/journald.conf && echo "MaxRetentionSec=30m" | sudo tee -a /etc/systemd/journald.conf
 
-# Install bracketbot
 runasuser() {
        su - bracketbot -c "cd /home/bracketbot; source ~/.bashrc; $*"
 }
+
+# Install bracketbot
 runasuser "curl -LsSf https://astral.sh/uv/install.sh | sh"
 runasuser "uv python install 3.11"
-runasuser "[[ -d BracketBotOS ]] || git clone -b ipc https://oauth2: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@github.com/Bracket-Bot-Inc/BracketBotOS.git"
+runasuser "[[ -d BracketBotOS ]] || git clone -b ipc https://oauth2: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@github.com/Bracket-Bot-Inc/BracketBotOS.git"
+runasuser "[[ -d BracketBotAI ]] || git clone https://oauth2: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@github.com/Bracket-Bot-Inc/BracketBotAI.git"
+runasuser "[[ -d BracketBotApps ]] || { git clone https://oauth2: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@github.com/Bracket-Bot-Inc/BracketBotApps.git && printf 'dashboard\nhey_bracketbot\n' > BracketBotApps/.autostart && printf 'OPENAI_API_KEY=' > BracketBotApps/.env; }"
+
 runasuser "cd BracketBotOS; uv run ./install"
 
 # Use NetworkManager instead of ifupdown
@@ -159,4 +164,5 @@ nmcli con modify 'WIFI_SSID' \
   connection.autoconnect yes \
   connection.interface-name 'wlan0'
 
+sleep 2
 sudo reboot
