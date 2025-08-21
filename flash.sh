@@ -52,7 +52,9 @@ if [[ ! -f "img/$IMAGE" ]]; then
     echo "[*] Downloading..."
     wget -q --show-progress "https://dietpi.com/downloads/images/$IMAGE.xz"
     echo "[*] Decompressing..."
-    xz -dk "$IMAGE.xz" -C img/
+    mkdir -p img
+    xz -dk "$IMAGE.xz"
+    mv "$IMAGE" img/
     rm "$IMAGE.xz"
 fi
 
