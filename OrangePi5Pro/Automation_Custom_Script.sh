@@ -83,8 +83,7 @@ printf "%s ALL=(ALL) NOPASSWD:ALL\n" "$NEW_USER" >"$SUDOERS_FILE"
 chmod 0440 "$SUDOERS_FILE"
 
 # Helpful groups
-GROUPS='sudo dialout video audio spi render i2c'
-for grp in $GROUPS; do
+for grp in sudo dialout video audio spi render i2c; do
   getent group "$grp" >/dev/null || groupadd "$grp"
   usermod -aG "$grp" "$NEW_USER"
 done
