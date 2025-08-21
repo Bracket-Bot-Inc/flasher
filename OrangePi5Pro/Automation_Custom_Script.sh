@@ -19,7 +19,7 @@ if [[ -n "$FSTAB_LINE" ]]; then
 fi
 
 # Add overlays if not already present
-OVERLAY='spi0-m2-cs0-cs1-spidev'
+OVERLAY='spi0-m2-cs0-cs1-spidev i2c1-m4'
 if grep -q '^overlays=' /boot/dietpiEnv.txt; then
   sudo sed -i "s|^overlays=|overlays=$OVERLAY|" /boot/dietpiEnv.txt
 else
@@ -83,8 +83,8 @@ printf "%s ALL=(ALL) NOPASSWD:ALL\n" "$NEW_USER" >"$SUDOERS_FILE"
 chmod 0440 "$SUDOERS_FILE"
 
 # Helpful groups
-
-for grp in sudo dialout video audio spi render; do
+GROUPS='sudo dialout video audio spi render i2c'
+for grp in $GROUPS; do
   getent group "$grp" >/dev/null || groupadd "$grp"
   usermod -aG "$grp" "$NEW_USER"
 done
@@ -123,10 +123,9 @@ runasuser() {
 # Install bracketbot
 runasuser "curl -LsSf https://astral.sh/uv/install.sh | sh"
 runasuser "uv python install 3.11"
-runasuser "[[ -d BracketBotOS ]] || git clone -b ipc https://oauth2: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@github.com/Bracket-Bot-Inc/BracketBotOS.git"
+runasuser "[[ -d BracketBotOS ]] || git clone https://oauth2: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@github.com/Bracket-Bot-Inc/BracketBotOS.git"
 runasuser "[[ -d BracketBotAI ]] || git clone https://oauth2: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@github.com/Bracket-Bot-Inc/BracketBotAI.git"
 runasuser "[[ -d BracketBotApps ]] || { git clone https://oauth2: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@github.com/Bracket-Bot-Inc/BracketBotApps.git && printf 'dashboard\nhey_bracketbot\n' > BracketBotApps/.autostart && printf 'OPENAI_API_KEY=' > BracketBotApps/.env; }"
-
 runasuser "cd BracketBotOS; uv run ./install"
 
 # Use NetworkManager instead of ifupdown
