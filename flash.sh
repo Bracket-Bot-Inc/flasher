@@ -111,9 +111,10 @@ else
     sudo cp -X ${TARGET}/Automation_Custom_Script.sh /tmp/mnt/boot/
 
     sed -e "s/WIFI_SSID/$ESCAPED_SSID/g" \
-        -e "s/WIFI_PASSWORD/$ESCAPED_PASSWORD/g" ${TARGET}/Automation_Custom_Script.sh | sudo tee /tmp/mnt/boot/Automation_Custom_Script.sh > /dev/null
-
-    sed -e "s/OAUTH2_TOKEN/$OAUTH2_TOKEN/g" ${TARGET}/Automation_Custom_Script.sh | sudo tee /tmp/mnt/boot/Automation_Custom_Script.sh > /dev/null
+    -e "s/WIFI_PASSWORD/$ESCAPED_PASSWORD/g" \
+    -e "s/OAUTH2_TOKEN/$OAUTH2_TOKEN/g" \
+    "${TARGET}/Automation_Custom_Script.sh" \
+    | sudo tee /tmp/mnt/boot/Automation_Custom_Script.sh > /dev/null
     
     sudo umount /tmp/mnt 2>/dev/null
     anylinuxfs stop
