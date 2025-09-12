@@ -124,7 +124,7 @@ runasuser "curl -LsSf https://astral.sh/uv/install.sh | sh"
 runasuser "uv python install 3.11"
 runasuser "[[ -d BracketBotOS ]] || git clone https://oauth2:OAUTH2_TOKEN@github.com/Bracket-Bot-Inc/BracketBotOS.git"
 runasuser "[[ -d BracketBotAI ]] || git clone https://oauth2:OAUTH2_TOKEN@github.com/Bracket-Bot-Inc/BracketBotAI.git"
-runasuser "[[ -d BracketBotApps ]] || { git clone https://oauth2:OAUTH2_TOKEN@github.com/Bracket-Bot-Inc/BracketBotApps.git && printf 'dashboard\nhey_bracketbot\n' > BracketBotApps/.autostart && printf 'OPENAI_API_KEY=' > BracketBotApps/.env; }"
+runasuser "[[ -d BracketBotApps ]] || { git clone https://oauth2:OAUTH2_TOKEN@github.com/Bracket-Bot-Inc/BracketBotApps.git && printf 'dashboard\nhey_bracketbot\nflow\n' > BracketBotApps/.autostart && printf 'OPENAI_API_KEY=' > BracketBotApps/.env; }"
 runasuser "cd BracketBotOS; uv run ./install"
 
 # Use NetworkManager instead of ifupdown
