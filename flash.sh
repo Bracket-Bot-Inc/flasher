@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-OAUTH2_TOKEN="${TOKEN}"
 TARGET=OrangePi5Pro
 # Unified flash script for Linux and macOS
 IMAGE="DietPi_${TARGET}-ARMv8-Bookworm.img"
@@ -89,8 +88,6 @@ if [ "$OS" = "Linux" ]; then
     # Update and copy dietpi-wifi.txt on-the-fly
     sed -e "s/aWIFI_SSID\[0\]=.*/aWIFI_SSID[0]='$ESCAPED_SSID'/g" \
         -e "s/aWIFI_KEY\[0\]=.*/aWIFI_KEY[0]='$ESCAPED_PASSWORD'/g" ${TARGET}/dietpi-wifi.txt | sudo tee mnt/boot/dietpi-wifi.txt > /dev/null
-
-    sed -e "s/OAUTH2_TOKEN/$OAUTH2_TOKEN/g" ${TARGET}/Automation_Custom_Script.sh | sudo tee /tmp/mnt/boot/Automation_Custom_Script.sh > /dev/null
     
     sudo cp ${TARGET}/Automation_Custom_Script.sh mnt/boot/
     sudo umount mnt
@@ -112,7 +109,6 @@ else
 
     sed -e "s/WIFI_SSID/$ESCAPED_SSID/g" \
     -e "s/WIFI_PASSWORD/$ESCAPED_PASSWORD/g" \
-    -e "s/OAUTH2_TOKEN/$OAUTH2_TOKEN/g" \
     "${TARGET}/Automation_Custom_Script.sh" \
     | sudo tee /tmp/mnt/boot/Automation_Custom_Script.sh > /dev/null
     
